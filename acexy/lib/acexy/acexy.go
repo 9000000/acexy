@@ -64,25 +64,26 @@ type AceStream struct {
 }
 
 type ongoingStream struct {
-	clients  uint
-	done     chan struct{}
+	clients   uint
+	done      chan struct{}
 	closeDone sync.Once // guards close(done) against concurrent callers
-	player   *http.Response
-	stream   *AceStream
-	copier   *Copier
-	writers  *pmw.PMultiWriter
-	evicted  map[io.Writer]struct{} // writers evicted by PMultiWriter timeout
+	player    *http.Response
+	stream    *AceStream
+	copier    *Copier
+	writers   *pmw.PMultiWriter
+	evicted   map[io.Writer]struct{} // writers evicted by PMultiWriter timeout
 }
 
 // Structure referencing the AceStream Proxy - this is, ourselves
 type Acexy struct {
-	Scheme            string        // The scheme to be used when connecting to the AceStream middleware
-	Host              string        // The host to be used when connecting to the AceStream middleware
-	Port              int           // The port to be used when connecting to the AceStream middleware
-	Endpoint          AcexyEndpoint // The endpoint to be used when connecting to the AceStream middleware
-	EmptyTimeout      time.Duration // Timeout after which, if no data is written, the stream is closed
-	BufferSize        int           // The buffer size to use when copying the data
-	NoResponseTimeout time.Duration // Timeout to wait for a response from the AceStream middleware
+	Scheme                string        // The scheme to be used when connecting to the AceStream middleware
+	Host                  string        // The host to be used when connecting to the AceStream middleware
+	Port                  int           // The port to be used when connecting to the AceStream middleware
+	Endpoint              AcexyEndpoint // The endpoint to be used when connecting to the AceStream middleware
+	EmptyTimeout          time.Duration // Timeout after which, if no data is written, the stream is closed
+	BufferSize            int           // The buffer size to use when copying the data
+	NoResponseTimeout     time.Duration // Timeout to wait for a response from the AceStream middleware
+	ClientEvictionTimeout time.Duration // Timeout after which a client is evicted by PMultiWriter
 
 	// Information about ongoing streams
 	streams    map[AceID]*ongoingStream
@@ -163,7 +164,7 @@ func (a *Acexy) FetchStream(aceId AceID, extraParams url.Values) (*AceStream, er
 		ID:          aceId,
 	}
 
-	writers := pmw.New(context.Background(), 5*time.Second)
+	writers := pmw.New(context.Background(), a.ClientEvictionTimeout)
 	os := &ongoingStream{
 		clients: 0,
 		done:    make(chan struct{}),
