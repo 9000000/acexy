@@ -1,6 +1,6 @@
 services:
   acexy:
-    image: ghcr.io/javinator9889/acexy:0.2.0
+    image: ghcr.io/javinator9889/acexy:0.2.2
     restart: unless-stopped
     ports:
       - 8080:8080/tcp
@@ -14,6 +14,7 @@ services:
       ACEXY_EMPTY_TIMEOUT: "60s"  # Timeout to close the connection if no data is received
       ACEXY_BUFFER_SIZE: 4MB      # Buffer size is 4MB
       ACEXY_NO_RESPONSE_TIMEOUT: "10s"  # Timeout to close the connection if no response is received
+      ACEXY_CLIENT_EVICTION_TIMEOUT: "5s"  # Timeout to evict clients that are not responding
     links:
       - acestream
     depends_on:
