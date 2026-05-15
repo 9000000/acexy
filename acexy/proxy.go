@@ -20,15 +20,16 @@ import (
 )
 
 var (
-	addr              string
-	scheme            string
-	host              string
-	port              int
-	streamTimeout     time.Duration
-	m3u8              bool
-	emptyTimeout      time.Duration
-	size              Size
-	noResponseTimeout time.Duration
+	addr                  string
+	scheme                string
+	host                  string
+	port                  int
+	streamTimeout         time.Duration
+	m3u8                  bool
+	emptyTimeout          time.Duration
+	size                  Size
+	noResponseTimeout     time.Duration
+	clientEvictionTimeout time.Duration
 )
 
 //go:embed LICENSE.short
@@ -329,6 +330,14 @@ func parseArgs() {
 			"Can be set with ACEXY_NO_RESPONSE_TIMEOUT environment variable. "+
 			"Depending on the network conditions, you may want to adjust this value",
 	)
+	flag.DurationVar(
+		&clientEvictionTimeout,
+		"client-eviction-timeout",
+		LookupEnvOrDuration("ACEXY_CLIENT_EVICTION_TIMEOUT", 5*time.Second),
+		"timeout in human-readable format to wait for a client to read data before evicting them. "+
+			"Can be set with ACEXY_CLIENT_EVICTION_TIMEOUT environment variable. "+
+			"Depending on the client behavior, you may want to adjust this value",
+	)
 	flag.Parse()
 }
 
@@ -346,13 +355,14 @@ func main() {
 	}
 	// Create a new Acexy instance
 	acexy := &acexy.Acexy{
-		Scheme:            scheme,
-		Host:              host,
-		Port:              port,
-		Endpoint:          endpoint,
-		EmptyTimeout:      emptyTimeout,
-		BufferSize:        int(size.Bytes),
-		NoResponseTimeout: noResponseTimeout,
+		Scheme:                scheme,
+		Host:                  host,
+		Port:                  port,
+		Endpoint:              endpoint,
+		EmptyTimeout:          emptyTimeout,
+		BufferSize:            int(size.Bytes),
+		NoResponseTimeout:     noResponseTimeout,
+		ClientEvictionTimeout: clientEvictionTimeout,
 	}
 	acexy.Init()
 	slog.Debug("Acexy", "acexy", acexy)

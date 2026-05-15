@@ -264,6 +264,17 @@ adjustable by using environment variables.
       </th>
       <th><code>1s</code></th>
     <tr>
+    <tr>
+      <th><code>-client-eviction-timeout</code></th>
+      <th><code>ACEXY_CLIENT_EVICTION_TIMEOUT</code></th>
+      <th>
+        Time with no response from a client before kicking it out of the pool of players. This
+        helps prevent the other players from lagging behind because of an unresponsive player.
+        If the player's connection is expected to be unstable, increasing this value might prevent
+        the server from evicting slow clients.
+      </th>
+      <th><code>5s</code></th>
+    <tr>
   </tbody>
 </table>
 
